@@ -1,0 +1,49 @@
+name: Publish public YDS & YÖKDİL website
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'yokdil-hedef/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: public-github-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.publish.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout compiled public files
+        uses: actions/checkout@v4
+      - name: Prepare public site without source repository files
+        run: |
+          mkdir -p _site/yokdil-hedef
+          cp -a yokdil-hedef/. _site/yokdil-hedef/
+          touch _site/.nojekyll
+          cat > _site/index.html <<'EOF'
+          <!doctype html><html lang="tr"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0; url=./yokdil-hedef/"><title>YDS &amp; YÖKDİL Hedef</title><p><a href="./yokdil-hedef/">YDS &amp; YÖKDİL Hedef uygulamasını aç</a></p></html>
+          EOF
+          test -f _site/yokdil-hedef/index.html
+          test -f _site/yokdil-hedef/privacy.html
+          test -f _site/yokdil-hedef/support.html
+          test ! -e _site/src
+          test ! -e _site/package.json
+      - name: Set up GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Upload public site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - name: Publish
+        id: publish
+        uses: actions/deploy-pages@v4
