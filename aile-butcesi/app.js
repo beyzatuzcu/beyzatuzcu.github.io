@@ -29,7 +29,7 @@
   function centsInput(cents) { return cents ? (cents/100).toFixed(2).replace(".",",") : ""; }
   function validDate(s) { return typeof s==="string" && /^\d{4}-\d{2}-\d{2}$/.test(s) && !isNaN(new Date(s+"T12:00:00").getTime()) && new Date(s+"T12:00:00").toISOString().slice(0,10)===s; }
   function cleanAmount(n) { return Number.isSafeInteger(n) && n>0 && n<=100000000000 ? n : null; }
-  function defaults() { return {version:1,members:[{id:uid(),name:"Ben"},{id:uid(),name:"Aile Üyesi"}],transactions:[],transfers:[],budgets:{}}; }
+  function defaults() { return {version:1,members:[{id:uid(),name:"Ben"},{id:uid(),name:"Ablam"},{id:uid(),name:"Nisa"}],transactions:[],transfers:[],budgets:{}}; }
   function normalize(raw) {
     if (!raw || typeof raw!=="object" || !Array.isArray(raw.members) || !Array.isArray(raw.transactions)) throw Error("Geçerli bir Birlikte yedeği bulunamadı.");
     if (raw.members.length>100 || raw.transactions.length>20000 || (raw.transfers||[]).length>20000) throw Error("Dosya çok büyük.");
@@ -84,9 +84,9 @@
   function overview(){
     var totals=monthTotals(selectedMonth);
     $("sum-expense").textContent=money(totals.expense);
-    $("sum-income").textContent=money(totals.income);
-    $("sum-net").textContent=money(totals.income-totals.expense);
-    $("net-caption").textContent=totals.income<totals.expense?"Bu ay giderler gelirleri aştı":"Aylık nakit farkı";
+    $("sum-income").textContent=String(expenses(selectedMonth).length)+" adet";
+    $("sum-net").textContent=money(Math.round(totals.expense/Math.max(1,state.members.length)));
+    $("net-caption").textContent="Bilgi amaçlı; gerçek borçlar seçilen paylaşıma göre hesaplanır";
     $("month-title").textContent=monthDisplay(selectedMonth);
     $("category-overview").innerHTML=categoryRows(selectedMonth,5);
     var paid=paidByMember(selectedMonth);
@@ -163,12 +163,13 @@
     if([].some.call(category.options,function(o){return o.value===selected;}))category.value=selected;
     $("payer-label").textContent=income?"Geliri kim aldı?":"Kim ödedi?";
     document.querySelector(".participants-field").classList.toggle("hidden",income);
+    document.querySelector(".segmented").classList.toggle("hidden",!income);
   }
   function openEntry(id){
     editingId=id||null;
     var form=$("entry-form");form.reset();
     var t=id?state.transactions.find(function(x){return x.id===id;}):null;
-    $("entry-heading").textContent=t?"İşlemi düzenle":"Yeni işlem";
+    $("entry-heading").textContent=t?"Masrafı düzenle":"Yeni masraf";
     document.querySelector('#entry-form [name="entry-type"][value="'+(t?t.type:"expense")+'"]').checked=true;
     var payer=form.elements.payer;
     payer.innerHTML=state.members.map(function(m){return '<option value="'+escapeHtml(m.id)+'">'+escapeHtml(m.name)+'</option>';}).join("");
@@ -191,7 +192,7 @@
     if(!t.title||!validDate(t.date)){toast("İşlem adı ve tarihini kontrol edin.");return;}
     var index=state.transactions.findIndex(function(x){return x.id===editingId;});
     if(index>=0)state.transactions[index]=t;else state.transactions.push(t);
-    selectedMonth=t.date.slice(0,7);close("entry-dialog");commit();toast(index>=0?"İşlem güncellendi.":"İşlem kaydedildi.");go("hareketler");
+    selectedMonth=t.date.slice(0,7);close("entry-dialog");commit();toast(index>=0?"Masraf güncellendi.":"Masraf kaydedildi.");go("paylasim");
   }
   function openMember(id){
     editingMemberId=id||null;$("member-form").reset();
