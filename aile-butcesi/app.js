@@ -92,15 +92,15 @@
     var paid=paidByMember(selectedMonth);
     var max=Math.max(1,...Object.values(paid));
     $("payer-overview").innerHTML=state.members.map(function(m,i){return '<div class="person-row">'+avatar(m,i)+'<div class="person-info"><div class="person-name">'+escapeHtml(m.name)+'</div><div class="person-meta">'+(max===1&&paid[m.id]===0?"Henüz ödeme yok":"Toplam giderin %"+Math.round(paid[m.id]/Math.max(1,totals.expense)*100)+"’i")+'</div></div><div class="person-value">'+money(paid[m.id])+'</div></div>';}).join("");
-    var last=sortedRows(transactionsFor(selectedMonth)).slice(0,5);
-    $("recent-list").innerHTML=last.length?last.map(function(t){return transactionHtml(t,false);}).join(""):noData("🌷","Güzel bir başlangıç!","Bu ay henüz kayıt yok. İlk gelirini veya giderini ekle.",true);
+    var last=sortedRows(expenses(selectedMonth)).slice(0,5);
+    $("recent-list").innerHTML=last.length?last.map(function(t){return transactionHtml(t,false);}).join(""):noData("🌷","Güzel bir başlangıç!","Bu ay henüz ortak masraf yok. İlk kira veya faturayı ekle.",true);
   }
   function renderTransactions(){
     var q=$("search-input").value.trim().toLocaleLowerCase("tr-TR"),type=$("filter-type").value,member=$("filter-member").value;
     var old=$("filter-member").value;
     $("filter-member").innerHTML='<option value="all">Tüm üyeler</option>'+state.members.map(function(m){return '<option value="'+escapeHtml(m.id)+'">'+escapeHtml(m.name)+'</option>';}).join("");
     $("filter-member").value=state.members.some(function(m){return m.id===old;})?old:"all"; member=$("filter-member").value;
-    var rows=sortedRows(transactionsFor(selectedMonth)).filter(function(t){return (type==="all"||type===t.type)&&(member==="all"||t.payer===member)&&(!q||(t.title+" "+t.note+" "+t.category+" "+nameOf(t.payer)).toLocaleLowerCase("tr-TR").includes(q));});
+    var rows=sortedRows(expenses(selectedMonth)).filter(function(t){return (type==="all"||type===t.type)&&(member==="all"||t.payer===member)&&(!q||(t.title+" "+t.note+" "+t.category+" "+nameOf(t.payer)).toLocaleLowerCase("tr-TR").includes(q));});
     $("transaction-count").textContent=rows.length+" işlem";
     $("transaction-list").innerHTML=rows.length?rows.map(function(t){return transactionHtml(t,true);}).join(""):noData("🔎","Kayıt bulunamadı","Bu ay için filtrelerle eşleşen bir işlem yok.",false);
   }
@@ -112,7 +112,7 @@
     $("budget-list").innerHTML=budgets.length?budgets.map(function(pair){var used=amounts[pair[0]]||0,pct=Math.round(used/pair[1]*100);return '<div class="budget-row '+(used>pair[1]?"over":"")+'"><div class="budget-row-top"><strong>'+iconFor(pair[0],"expense")+' '+escapeHtml(pair[0])+'</strong><span>'+money(used)+' / '+money(pair[1])+'</span></div><div class="progress-track"><div class="progress-fill" style="width:'+Math.min(pct,100)+'%"></div></div><small>%'+pct+' kullanıldı'+(used>pair[1]?" · Limit aşıldı":"")+'</small></div>';}).join(""):noData("🎯","Henüz limit belirlenmedi","Kategori bazında bütçe koyarak harcamaları kontrol et.",false);
     var dates=[],parts=selectedMonth.split("-"),end=new Date(Number(parts[0]),Number(parts[1])-1,1);
     for(var i=5;i>=0;i--){var d=new Date(end.getFullYear(),end.getMonth()-i,1);dates.push(localDate(d).slice(0,7));}
-    var max=Math.max(1,...dates.map(function(m){var t=monthTotals(m);return Math.max(t.income,t.expense);}));
+    var max=Math.max(1,...dates.map(function(m){return monthTotals(m).expense;}));
     $("trend-chart").innerHTML=dates.map(function(m){var t=monthTotals(m),label=new Intl.DateTimeFormat("tr-TR",{month:"short"}).format(new Date(m+"-01T12:00:00"));return '<div class="trend-month"><div class="trend-bars"><div class="trend-bar expense" title="'+escapeHtml(money(t.expense))+'" style="height:'+Math.max(2,Math.round(t.expense/max*130))+'px"></div><div class="trend-bar income" title="'+escapeHtml(money(t.income))+'" style="height:'+Math.max(2,Math.round(t.income/max*130))+'px"></div></div><span class="trend-month-label">'+escapeHtml(label)+'</span></div>';}).join("");
   }
   function calculateBalances(month){
@@ -168,7 +168,7 @@
     if([].some.call(category.options,function(o){return o.value===selected;}))category.value=selected;
     $("payer-label").textContent=income?"Geliri kim aldı?":"Kim ödedi?";
     document.querySelector(".participants-field").classList.toggle("hidden",income);
-    document.querySelector(".segmented").classList.toggle("hidden",!income);
+    document.querySelector(".segmented").classList.add("hidden");
   }
   function openEntry(id){
     editingId=id||null;
