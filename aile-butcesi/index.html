@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f5f1">
+  <meta name="description" content="Aile bütçeni, ortak masrafları ve kimin ne ödediğini tek yerde takip et.">
+  <title>Birlikte · Aile Bütçesi</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./style.css">
+  <script defer src="./app.js"></script>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <a class="brand" href="#genel" aria-label="Birlikte ana sayfa"><span class="brand-icon">✦</span><span>birlikte<span class="brand-dot">.</span><small>aile bütçesi</small></span></a>
+    <div class="nav-label">MENÜ</div>
+    <nav class="main-nav" aria-label="Ana menü">
+      <button class="nav-link active" data-page="genel"><span class="nav-emoji">⌂</span> Genel Bakış</button>
+      <button class="nav-link" data-page="hareketler"><span class="nav-emoji">▤</span> Hareketler</button>
+      <button class="nav-link" data-page="raporlar"><span class="nav-emoji">◫</span> Raporlar</button>
+      <button class="nav-link" data-page="paylasim"><span class="nav-emoji">⇄</span> Hesaplaşma</button>
+      <button class="nav-link" data-page="uyeler"><span class="nav-emoji">♧</span> Aile Üyeleri</button>
+      <button class="nav-link" data-page="ayarlar"><span class="nav-emoji">⚙</span> Ayarlar</button>
+    </nav>
+    <div class="sidebar-bottom"><div class="privacy-mark">🔒 <span>Verilerin bu cihazda saklanır.</span></div><div class="made-with">Birlikte planla, rahatça yaşa. <span>✺</span></div></div>
+  </aside>
+  <main class="main-area">
+    <header class="topbar">
+      <div class="mobile-brand"><span class="brand-icon">✦</span> birlikte<span class="brand-dot">.</span></div>
+      <div class="topbar-actions"><label class="month-wrap"><span>📅</span><input id="month-input" type="month" aria-label="Görüntülenecek ay"></label><button class="btn btn-primary top-add" data-open-expense>＋ Yeni işlem</button></div>
+    </header>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <section id="page-genel" class="page">
+      <div class="page-heading"><div><div class="eyebrow">AİLENİN FİNANS MERKEZİ</div><h1>Merhaba, hoş geldin! <span class="wave">👋</span></h1><p>Birlikte harcayın, birlikte takip edin. Hepsi burada.</p></div><div class="month-title" id="month-title"></div></div>
+      <div class="summary-grid">
+        <article class="summary-card card-dark"><div class="summary-top"><span>Bu ayki giderler</span><span class="summary-icon">↗</span></div><strong id="sum-expense">₺0,00</strong><div class="card-sub">Seçili ayın toplam harcaması</div><div class="card-orbit"></div></article>
+        <article class="summary-card card-white"><div class="summary-top"><span>Bu ayki gelirler</span><span class="summary-icon color-green">↘</span></div><strong id="sum-income">₺0,00</strong><div class="card-sub">Kaydedilen tüm gelirler</div></article>
+        <article class="summary-card card-peach"><div class="summary-top"><span>Gelir − gider</span><span class="summary-icon">✺</span></div><strong id="sum-net">₺0,00</strong><div class="card-sub" id="net-caption">Aylık nakit farkı</div></article>
+      </div>
+      <div class="overview-grid">
+        <article class="panel"><div class="panel-head"><div><div class="eyebrow">HARCAMALAR</div><h2>Paralar nereye gidiyor?</h2></div><button class="text-button" data-go="raporlar">Detaylar ↗</button></div><div id="category-overview" class="categories"></div></article>
+        <article class="panel"><div class="panel-head"><div><div class="eyebrow">AİLECE</div><h2>Kim ne kadar ödedi?</h2></div><button class="text-button" data-go="paylasim">Hesaplaş ↗</button></div><div id="payer-overview" class="people-list"></div></article>
+      </div>
+      <article class="panel recent-panel"><div class="panel-head"><div><div class="eyebrow">GÜNCEL DURUM</div><h2>Son işlemler</h2></div><button class="text-button" data-go="hareketler">Tümünü gör ↗</button></div><div id="recent-list"></div></article>
+    </section>
+    <section id="page-hareketler" class="page hidden">
+      <div class="page-heading"><div><div class="eyebrow">GELİR & GİDER</div><h1>Hareketler</h1><p>Tüm aile harcamalarını tek yerde gör ve düzenle.</p></div><button class="btn btn-primary" data-open-expense>＋ İşlem ekle</button></div>
+      <div class="panel filters-panel"><div class="filter-row"><label class="search-wrap">⌕ <input id="search-input" placeholder="İşlem veya açıklama ara..." autocomplete="off"></label><select id="filter-type" aria-label="İşlem türü"><option value="all">Tüm işlemler</option><option value="expense">Giderler</option><option value="income">Gelirler</option></select><select id="filter-member" aria-label="Ödeyen kişi"><option value="all">Tüm üyeler</option></select></div></div>
+      <div class="panel transaction-panel"><div class="panel-head"><h2>İşlem listesi</h2><span id="transaction-count" class="count-pill">0 işlem</span></div><div id="transaction-list"></div></div>
+    </section>
+    <section id="page-raporlar" class="page hidden">
+      <div class="page-heading"><div><div class="eyebrow">AYLIK ANALİZ</div><h1>Raporlar</h1><p>En çok harcadığınız kategorileri ve bütçe durumunu izleyin.</p></div></div>
+      <div class="overview-grid report-grid"><article class="panel"><div class="panel-head"><div><div class="eyebrow">KATEGORİLER</div><h2>Gider dağılımı</h2></div></div><div id="report-categories"></div></article><article class="panel"><div class="panel-head"><div><div class="eyebrow">BÜTÇE PLANI</div><h2>Kategori limitleri</h2></div><button class="text-button" id="edit-budgets">Düzenle ↗</button></div><div id="budget-list"></div><p class="section-note">Belirlediğiniz limitler her ay yeniden uygulanır.</p></article></div>
+      <article class="panel"><div class="panel-head"><div><div class="eyebrow">GENEL DURUM</div><h2>Son 6 ay</h2></div></div><div id="trend-chart" class="trend-chart"></div><div class="trend-legend"><span><i class="legend-expense"></i> Gider</span><span><i class="legend-income"></i> Gelir</span></div></article>
+    </section>
+    <section id="page-paylasim" class="page hidden">
+      <div class="page-heading"><div><div class="eyebrow">ORTAK HESAP</div><h1>Hesaplaşma</h1><p>Ortak giderleri kim karşıladı, kimin kime ne kadar borcu kaldı?</p></div></div>
+      <div class="settlement-help">💡 Bir gider eklerken <strong>masrafı paylaşanları</strong> seçin. Tutar seçilen kişiler arasında eşit bölünür. Ödeyenin yaptığı ödeme dikkate alınarak borçlar hesaplanır.</div>
+      <div class="overview-grid"><article class="panel"><div class="panel-head"><div><div class="eyebrow">NET DURUM</div><h2>Aile üyeleri</h2></div></div><div id="balance-list"></div></article><article class="panel"><div class="panel-head"><div><div class="eyebrow">ÖDEME ÖNERİLERİ</div><h2>Kim kime ödesin?</h2></div></div><div id="settlement-list"></div></article></div>
+      <article class="panel"><div class="panel-head"><div><div class="eyebrow">BORÇ KAPATMA</div><h2>Yapılan ödemeler</h2></div></div><div id="transfer-list"></div></article>
+    </section>
+    <section id="page-uyeler" class="page hidden">
+      <div class="page-heading"><div><div class="eyebrow">EVİN EKİBİ</div><h1>Aile üyeleri</h1><p>Harcama paylaşımına katılan herkesi yönetin.</p></div><button class="btn btn-primary" id="add-member">＋ Üye ekle</button></div><div id="members-list" class="members-grid"></div>
+      <div class="tip-panel">👨‍👩‍👧‍👦 Yeni üyeler sonraki giderlere dahil edilebilir. Önceden kaydettiğiniz giderlerin paylaşım oranları otomatik değişmez.</div>
+    </section>
+    <section id="page-ayarlar" class="page hidden">
+      <div class="page-heading"><div><div class="eyebrow">VERİ YÖNETİMİ</div><h1>Ayarlar ve yedekleme</h1><p>Kayıtlarının kontrolü sende.</p></div></div>
+      <div class="settings-grid"><article class="panel"><div class="settings-icon">↓</div><h2>Verilerini yedekle</h2><p>Üyeleri, gelir-giderleri, bütçeleri ve hesaplaşma kayıtlarını JSON dosyası olarak indir.</p><button id="export-json" class="btn btn-outline">JSON yedeğini indir</button></article><article class="panel"><div class="settings-icon">↑</div><h2>Yedekten geri yükle</h2><p>Daha önce kaydettiğin JSON dosyasını yükle. Mevcut verilerin yerine geçer.</p><label class="btn btn-outline file-btn" for="import-json">Yedek dosyası seç</label><input type="file" id="import-json" accept=".json,application/json" hidden></article><article class="panel"><div class="settings-icon">▤</div><h2>Excel için dışa aktar</h2><p>İşlemleri Excel'de açılabilen CSV dosyası olarak indir.</p><button id="export-csv" class="btn btn-outline">CSV indir</button></article><article class="panel danger-panel"><div class="settings-icon">×</div><h2>Tüm verileri sil</h2><p>Bu cihazdaki tüm kayıtlar kalıcı olarak silinir. Önce yedek almanı öneririz.</p><button id="reset-data" class="btn btn-danger">Verileri sıfırla</button></article></div>
+      <div class="tip-panel">🔐 <strong>Gizlilik:</strong> Bilgiler yalnızca bu tarayıcıda tutulur; sunucuya veya GitHub'a gönderilmez. Aynı hesap başka telefonda otomatik görünmez. Cihaz değiştirirken JSON yedek aktarımı kullanın.</div>
+    </section>
+    <footer class="footer">birlikte<span class="brand-dot">.</span> <span>•</span> Aile bütçeniz, daha düzenli bir yarın.</footer>
+  </main>
+</div>
+<nav class="mobile-nav" aria-label="Mobil menü"><button data-page="genel" class="active"><span>⌂</span>Özet</button><button data-page="hareketler"><span>▤</span>İşlemler</button><button data-page="paylasim"><span>⇄</span>Paylaş</button><button data-page="raporlar"><span>◫</span>Rapor</button><button data-page="uyeler"><span>♧</span>Aile</button><button data-page="ayarlar"><span>⚙</span>Ayarlar</button></nav>
+<button class="mobile-fab" data-open-expense aria-label="Yeni işlem ekle">＋</button>
+
+<dialog id="entry-dialog" class="dialog">
+  <form id="entry-form" class="dialog-content">
+    <div class="dialog-head"><div><div class="eyebrow">KAYIT OLUŞTUR</div><h2 id="entry-heading">Yeni işlem</h2></div><button class="close-btn" type="button" data-close="entry-dialog" aria-label="Kapat">✕</button></div>
+    <div class="segmented"><label><input type="radio" name="entry-type" value="expense" checked><span>↗ Gider</span></label><label><input type="radio" name="entry-type" value="income"><span>↘ Gelir</span></label></div>
+    <div class="form-grid"><label class="field field-wide">İşlem adı<input name="title" maxlength="100" required placeholder="Örn. Haftalık market alışverişi"></label>
+      <label class="field">Tutar (₺)<input name="amount" type="text" inputmode="decimal" required placeholder="0,00"></label>
+      <label class="field">Tarih<input name="date" type="date" required></label>
+      <label class="field">Kategori<select name="category" required></select></label>
+      <label class="field"><span id="payer-label">Kim ödedi?</span><select name="payer" required></select></label>
+      <label class="field field-wide">Not (isteğe bağlı)<textarea name="note" rows="2" maxlength="280" placeholder="Bu işlemle ilgili bir not..."></textarea></label>
+    </div>
+    <fieldset class="participants-field"><legend>Masraf kimler arasında paylaşılsın?</legend><div id="participants-checkboxes"></div><p>Seçilen kişiler tutarı eşit paylaşır. En az bir kişi seçin.</p></fieldset>
+    <div class="dialog-actions"><button type="button" class="btn btn-outline" data-close="entry-dialog">Vazgeç</button><button type="submit" class="btn btn-primary">Kaydet</button></div>
+  </form>
+</dialog>
+<dialog id="member-dialog" class="dialog"><form id="member-form" class="dialog-content dialog-small"><div class="dialog-head"><div><div class="eyebrow">AİLEN</div><h2 id="member-heading">Üye ekle</h2></div><button type="button" class="close-btn" data-close="member-dialog">✕</button></div><label class="field">İsim<input name="name" maxlength="40" required placeholder="Aile üyesinin adı"></label><div class="dialog-actions"><button type="button" class="btn btn-outline" data-close="member-dialog">Vazgeç</button><button type="submit" class="btn btn-primary">Kaydet</button></div></form></dialog>
+<dialog id="budget-dialog" class="dialog"><form id="budget-form" class="dialog-content"><div class="dialog-head"><div><div class="eyebrow">AYLIK HEDEFLER</div><h2>Kategori bütçeleri</h2></div><button class="close-btn" type="button" data-close="budget-dialog">✕</button></div><p class="subtle">İstediğiniz kategorilere aylık bir harcama limiti girin. Boş bıraktıklarınız sınırsız olur.</p><div id="budget-fields" class="budget-fields"></div><div class="dialog-actions"><button type="button" class="btn btn-outline" data-close="budget-dialog">Vazgeç</button><button type="submit" class="btn btn-primary">Limitleri kaydet</button></div></form></dialog>
+<script>if("serviceWorker" in navigator)window.addEventListener("load",function(){navigator.serviceWorker.register("./sw.js").catch(function(){})});</script>
+</body></html>
