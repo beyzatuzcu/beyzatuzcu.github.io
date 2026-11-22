@@ -116,13 +116,18 @@
     $("trend-chart").innerHTML=dates.map(function(m){var t=monthTotals(m),label=new Intl.DateTimeFormat("tr-TR",{month:"short"}).format(new Date(m+"-01T12:00:00"));return '<div class="trend-month"><div class="trend-bars"><div class="trend-bar expense" title="'+escapeHtml(money(t.expense))+'" style="height:'+Math.max(2,Math.round(t.expense/max*130))+'px"></div><div class="trend-bar income" title="'+escapeHtml(money(t.income))+'" style="height:'+Math.max(2,Math.round(t.income/max*130))+'px"></div></div><span class="trend-month-label">'+escapeHtml(label)+'</span></div>';}).join("");
   }
   function calculateBalances(month){
-    var b={};state.members.forEach(function(m){b[m.id]=0;});
+    var b={},groups={};state.members.forEach(function(m){b[m.id]=0;});
     expenses(month).forEach(function(t){
-      var people=t.participants.filter(function(id){return Object.prototype.hasOwnProperty.call(b,id);});
+      var people=t.participants.filter(function(id){return Object.prototype.hasOwnProperty.call(b,id);}).sort();
       if(!people.length)return;
       b[t.payer]+=t.amount;
-      var each=Math.floor(t.amount/people.length),remainder=t.amount%people.length;
-      people.forEach(function(id,i){b[id]-=each+(i<remainder?1:0);});
+      var key=JSON.stringify(people);
+      if(!groups[key])groups[key]={people:people,total:0};
+      groups[key].total+=t.amount;
+    });
+    Object.keys(groups).forEach(function(key){
+      var group=groups[key],each=Math.floor(group.total/group.people.length),remainder=group.total%group.people.length;
+      group.people.forEach(function(id,i){b[id]-=each+(i<remainder?1:0);});
     });
     state.transfers.filter(function(t){return t.date.slice(0,7)===month;}).forEach(function(t){b[t.from]+=t.amount;b[t.to]-=t.amount;});
     return b;
