@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - 'yokdil-hedef/**'
+      - 'aile-butcesi/**'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 
@@ -29,6 +30,8 @@ jobs:
         run: |
           mkdir -p _site/yokdil-hedef
           cp -a yokdil-hedef/. _site/yokdil-hedef/
+          mkdir -p _site/aile-butcesi
+          cp -a aile-butcesi/. _site/aile-butcesi/
           touch _site/.nojekyll
           cat > _site/index.html <<'EOF'
           <!doctype html><html lang="tr"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0; url=./yokdil-hedef/"><title>YDS &amp; YÖKDİL Hedef</title><p><a href="./yokdil-hedef/">YDS &amp; YÖKDİL Hedef uygulamasını aç</a></p></html>
@@ -36,6 +39,8 @@ jobs:
           test -f _site/yokdil-hedef/index.html
           test -f _site/yokdil-hedef/privacy.html
           test -f _site/yokdil-hedef/support.html
+          test -f _site/aile-butcesi/index.html
+          test -f _site/aile-butcesi/app.js
           test ! -e _site/src
           test ! -e _site/package.json
       - name: Set up GitHub Pages
